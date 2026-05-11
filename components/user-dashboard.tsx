@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input, Select } from "@/components/ui/input";
 import { Panel, SectionHeading } from "@/components/ui/panel";
+import { useProcessStatus } from "@/lib/useProcessStatus";
 
 type Tab = "overview" | "videos" | "processes" | "plans";
 
@@ -63,23 +64,17 @@ export function UserDashboard({ session }: { session: Session }) {
     return () => window.clearTimeout(timer);
   }, [loadData]);
 
-  useEffect(() => {
-    const active = processes.filter((item) => item.status && !["COMPLETED", "FAILED"].includes(item.status.toUpperCase()));
-    if (active.length === 0) return;
+  const activeProcessUuids = processes
+    .filter((item) => !["FINISHED", "INTERRUPTED"].includes((item.status ?? "PENDING").toUpperCase()))
+    .map((item) => item.uuid);
 
-    const timer = window.setInterval(async () => {
-      const updates = await Promise.allSettled(active.map((item) => api.getProcessStatus(session.token, item.uuid)));
-      setProcesses((current) =>
-        current.map((item) => {
-          const update = updates[active.findIndex((activeItem) => activeItem.uuid === item.uuid)];
-          if (update?.status === "fulfilled") return { ...item, status: update.value.data.status };
-          return item;
-        })
-      );
-    }, 5000);
-
-    return () => window.clearInterval(timer);
-  }, [processes, session.token]);
+  useProcessStatus(activeProcessUuids, (processUuid, status) => {
+    setProcesses((current) =>
+      current.map((item) =>
+        item.uuid === processUuid ? { ...item, status } : item
+      )
+    );
+  });
 
   const uploadedVideos = videos.filter((video) => video.is_uploaded && !video.is_deleted);
   const activeJobs = processes.filter((item) => !["COMPLETED", "FAILED"].includes((item.status ?? "PENDING").toUpperCase()));
