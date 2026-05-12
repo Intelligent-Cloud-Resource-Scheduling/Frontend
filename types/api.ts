@@ -23,7 +23,8 @@ export type Session = {
 };
 
 export type LoginResponse = {
-  user: User;
+  user?: User;
+  admin?: User;
   token: string;
 };
 
@@ -88,4 +89,33 @@ export type ProcessStatus = {
   processUuid: string;
   status: string;
   updatedAt: string;
+};
+
+export type Vm = {
+  id: number;
+  uuid: string;
+  name: string;
+  cores: number;
+  memory: number;
+  cost: number;
+  status: string;
+  instance_id?: string | null;
+  aws_state?: string | null;
+  created_at: string;
+};
+
+export type VmStatus = {
+  status: string;
+  aws_state: string;
+};
+
+export type VmHistory = {
+  batch_uuid?: string | null;
+  run_duration?: number | null;
+  run_cost?: number | null;
+  created_at?: string | null;
+};
+
+export type VmSpentCost = {
+  spent: number | null;
 };

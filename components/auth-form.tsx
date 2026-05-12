@@ -33,10 +33,16 @@ export function AuthForm({ mode, role }: { mode: AuthMode; role: AppRole }) {
             ? await api.loginAdmin({ email, password })
             : await api.loginUser({ email, password });
 
+      const account = response.data.user ?? response.data.admin;
+
+      if (!account) {
+        throw new Error("Authentication succeeded but no account was returned.");
+      }
+
       saveSession({
         role,
         token: response.data.token,
-        user: response.data.user
+        user: account
       });
 
       router.push(role === "admin" ? "/admin/dashboard" : "/dashboard");
