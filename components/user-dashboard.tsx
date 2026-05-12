@@ -175,7 +175,7 @@ function OverviewPanel({
     ["Active jobs", activeJobs, Activity],
     ["Completed jobs", completedJobs, CheckCircle2],
     ["Current plan", currentPlan?.name ?? "No plan", Rocket],
-    ["Weekly usage", `${weeklyUsed}/${weeklyLimit || "∞"}`, Gauge]
+    ["Weekly usage", `${weeklyUsed}/${weeklyLimit || "unlimited"}`, Gauge]
   ];
 
   return (
@@ -390,7 +390,7 @@ function UploadPanel({ token, onUploaded }: { token: string; onUploaded: () => P
       >
         <UploadCloud className="mx-auto h-9 w-9 text-primary" />
         <p className="mt-3 text-sm font-semibold text-slate-900">{file ? file.name : "Drop your video file here"}</p>
-        <p className="mt-1 text-sm text-muted-foreground">{file ? `${formatBytes(file.size)} · ${formatDuration(duration)}` : "MP4 or any backend-supported video format"}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{file ? `${formatBytes(file.size)} / ${formatDuration(duration)}` : "MP4 or any backend-supported video format"}</p>
         <input
           ref={inputRef}
           type="file"
@@ -452,7 +452,6 @@ function ProcessManagement({
   async function calculate() {
     if (!videoUuid) return;
     const response = await api.calculateDuration(token, videoUuid, { quality, fps });
-    console.log(response)
     setEstimate(response.data.duration);
     setMessage("Estimated duration calculated.");
   }
@@ -537,10 +536,10 @@ function ProcessManagement({
                   <tr key={process.uuid} className="border-b border-border last:border-0">
                     <td className="py-3 pr-4 font-semibold text-slate-900">{process.uuid.slice(0, 8)}</td>
                     <td className="py-3 pr-4">
-                      {process.quality} · {process.fps} fps · {formatDuration(process.duration)}
+                      {process.quality} / {process.fps} fps / {formatDuration(process.duration)}
                     </td>
                     <td className="py-3 pr-4">
-                      {process.cores} cores · {process.memory} MB
+                      {process.cores} cores / {process.memory} MB
                     </td>
                     <td className="py-3 pr-4">
                       <Badge tone={process.status}>{process.status ?? "PENDING"}</Badge>

@@ -9,13 +9,17 @@ import type {
   ProcessItem,
   ProcessStatus,
   UploadInit,
+  Vm,
+  VmHistory,
+  VmSpentCost,
+  VmStatus,
   Video
 } from "@/types/api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3500";
 
 type RequestOptions = {
-  method?: "GET" | "POST" | "DELETE";
+  method?: "GET" | "POST" | "PATCH" | "DELETE";
   token?: string;
   body?: unknown;
 };
@@ -54,6 +58,40 @@ export const api = {
     request<LoginResponse>("/users/login", { method: "POST", body }),
   loginAdmin: (body: { email: string; password: string }) =>
     request<LoginResponse>("/admins/login", { method: "POST", body }),
+  createAdminPlan: (
+    token: string,
+    body: {
+      name: string;
+      description: string;
+      price: number;
+      max_uploads_per_week: number;
+    }
+  ) => request<Plan>("/plans/create", { method: "POST", token, body }),
+  updateAdminPlan: (
+    token: string,
+    planUuid: string,
+    body: Partial<{
+      name: string;
+      description: string;
+      price: number;
+      max_uploads_per_week: number;
+      is_hidden: boolean;
+    }>
+  ) => request<Plan>(`/plans/edit/${planUuid}`, { method: "PATCH", token, body }),
+  createVm: (token: string, body: { name: string; cores: number; memory: number }) =>
+    request<Vm>("/vm/create", { method: "POST", token, body }),
+  deleteVm: (token: string, vmUuid: string) =>
+    request<null>(`/vm/confirm-delete/${vmUuid}`, { method: "DELETE", token }),
+  stopVm: (token: string, vmUuid: string) =>
+    request<null>(`/vm/stop/${vmUuid}`, { method: "PATCH", token }),
+  getVmStatus: (token: string, vmUuid: string) =>
+    request<VmStatus>(`/vm/current-status/${vmUuid}`, { token }),
+  getVmHistory: (token: string, vmUuid: string) =>
+    request<VmHistory>(`/vm/history/${vmUuid}`, { token }),
+  getVmSpentCost: (token: string, vmUuid: string) =>
+    request<VmSpentCost>(`/vm/spentcost/${vmUuid}`, { token }),
+  getVm: (token: string, vmUuid: string) => request<Vm>(`/vm/${vmUuid}`, { token }),
+  listVms: (token: string) => request<Vm[]>("/vm", { token }),
   listVideos: (token: string) => request<Video[]>("/videos", { token }),
   getVideo: (token: string, videoUuid: string) => request<Video>(`/videos/${videoUuid}`, { token }),
   initVideoUpload: (
